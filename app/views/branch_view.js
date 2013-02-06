@@ -36,7 +36,7 @@ module.exports = View.extend({
    
     var colors = ["#D7191C", "#FDAE61", "#CCCCAC", "#ABD9E9", "#2C7BB6"];
     var color = function(d){
-        if ( ! colors.hasOwnProperty(d.termcat)){
+        if ( ! colors.hasOwnProperty(parseInt(d.termcat))){
           console.log("bad color "+ (d.termcat-1));
           return "#000000";
         }
@@ -207,6 +207,9 @@ module.exports = View.extend({
 
     for (var i = 0; i < pcdata.length; i++) {
       fnames.push(pcdata[i][0]);
+      for (var j = 1; j < pcdata[i].length; j++) {
+        pcdata[i][j] = Math.log(pcdata[i][j]);
+      };
     };
 
     $(".feature-search").typeahead({
