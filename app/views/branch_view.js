@@ -103,7 +103,7 @@ module.exports = View.extend({
           .text(function(d){ return d[1];})
           .style("width",function(d){return d[1]+"px";})
           .style("float","left")
-          .style("background-color",function(d){ return color({termcat:d[0]}); });
+          .style("background-color",function(d){ console.log(d[0]); return color({termcat:d[0]}); });
     };
 
     var loadFvsTermCat = function(name){
