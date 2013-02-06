@@ -207,11 +207,6 @@ module.exports = View.extend({
 
     for (var i = 0; i < pcdata.length; i++) {
       fnames.push(pcdata[i][0]);
-      if (i > 1 ){
-        for (var j = 1; j < pcdata[i].length; j++) {
-          pcdata[i][j] = Math.log(pcdata[i][j]);
-        }
-      }
     }
 
     $(".feature-search").typeahead({
