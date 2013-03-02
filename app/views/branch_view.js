@@ -40,7 +40,7 @@ module.exports = View.extend({
    
     var colors = ["#D7191C", "#FDAE61", "#CCCCAC", "#ABD9E9", "#2C7BB6"];
     var color = function(d){
-        if ( ! colors.hasOwnProperty(d.termcat)){
+        if ( ! colors.hasOwnProperty(parseInt(d.termcat))){
           console.log("bad color "+ (d.termcat-1));
           return "#000000";
         }
@@ -107,7 +107,7 @@ module.exports = View.extend({
           .text(function(d){ return d[1];})
           .style("width",function(d){return d[1]+"px";})
           .style("float","left")
-          .style("background-color",function(d){ return color({termcat:d[0]}); });
+          .style("background-color",function(d){ console.log(d[0]); return color({termcat:d[0]}); });
     };
 
     var loadFvsTermCat = function(name){
@@ -278,8 +278,9 @@ module.exports = View.extend({
 
     for (var i = 0; i < pcdata.length; i++) {
       fnames.push(pcdata[i][0]);
-      
-    };
+
+    }
+
 
     $(".feature-search").typeahead({
       source:fnames,
