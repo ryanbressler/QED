@@ -20,12 +20,16 @@ module.exports = View.extend({
     this.model.on('load',_this.renderGrid);
   },
 
+  featureScat : function(feature){
+    console.log(feature);
+  },
+
   renderGrid : function(){
     var me = this;
     var scatdata = this.model.getD3Data();
     var length = scatdata.length;
     var ignore_keys = ['label','type','source','feature_id','nByi',"feature","featureID"];
-    var height = 400;
+    var height = 200;
     var width = 1000;
     var x = function(d) {
           return d.r1*(width/length);
@@ -88,10 +92,10 @@ module.exports = View.extend({
       });
     };
 
-    var fmsvcbase = "/svc/data/domains/feature_matrices/"+ me.model.get("dataset_id")
-      .replace("_preterm","")
-      .replace("_unblacklisted","")
-      .replace("_blacklisted","");
+    // var fmsvcbase = "/svc/data/domains/feature_matrices/"+ me.model.get("dataset_id")
+    //   .replace("_preterm","")
+    //   .replace("_unblacklisted","")
+    //   .replace("_blacklisted","");
 
     var showFvsT = function (selector,data) {
       $(selector).html("");
@@ -107,22 +111,89 @@ module.exports = View.extend({
     };
 
     var loadFvsTermCat = function(name){
-      d3.tsv(fmsvcbase+"?rows=N:CLIN:TermCategory:NB::::,"+name,function(data){
-        var truevs = [];
-        var falsevs = [];
-        var keys = _.difference(Object.keys(data[0]),ignore_keys);
-        for (var i = 0; i < keys.length; i++) {
-          if( data[1][keys[i]]==1 ) {
-            truevs.push(data[0][keys[i]]);
-          } else {
-            falsevs.push(data[0][keys[i]]);
+      var fmsvcbase = "";
+      var dataset_id = me.model.get("dataset_id");
+      var bestlength = 0;
+      d3.json("/svc/data/domains/feature_matrices",function(fms){
+        for (var i = fms.files.length - 1; i >= 0; i--) {
+          if (dataset_id.indexOf(fms.files[i].label) === 0 && fms.files[i].label.length > bestlength ) {
+            fmsvcbase=fms.files[i].uri;
           }
         }
 
-        truevs = _.pairs(_.countBy(truevs,function(v){ return v; }));
-        falsevs = _.pairs(_.countBy(falsevs,function(v){ return v; }));
-        showFvsT(".true-output",truevs);
-        showFvsT(".false-output",falsevs);
+        d3.tsv("/svc"+fmsvcbase+"?rows=N:CLIN:TermCategory:NB::::,"+name,function(data){
+          var truevs = [];
+          var falsevs = [];
+          var pcdata = me.model.get('branches');
+          var countByCase={};
+          var maxCount = 0;
+          var scaterdata = [];
+          for (var i = pcdata.length - 1; i >= 0; i--) {
+            if (pcdata[i][0]==name){
+              for (var j = 1; j < pcdata[i].length; j++) {
+                var caseid = pcdata[0][j];
+                var x = parseFloat(data[0][caseid]);
+                if (name[0]=="B") {
+                  x = (+ data[0][caseid].toLowerCase()=="true")+0.2*Math.random()-0.1;
+
+                }
+                
+                scaterdata.push({x:x,y:parseFloat(data[1][caseid])+0.6*Math.random()-0.3,count:pcdata[i][j],caseid:caseid});
+                countByCase[pcdata[0][j]]=pcdata[i][j];
+                if (pcdata[i][j]>maxCount) {
+                  //should this be the global max instead of just for this feature?
+                  maxCount = pcdata[i][j];
+                }
+              }
+            }
+          }
+
+          
+          
+
+          var keys = _.difference(Object.keys(data[0]),ignore_keys);
+          $(".feature-container").html("");
+          var svg = d3.select(".feature-container")
+            .append("svg")
+            .attr("width", 800)
+            .attr("height", 800);
+          
+          var opac = function(d) {
+            return .2+.8*d.count/maxCount;
+          };
+
+          var xScale = d3.scale.linear()
+                     .domain([d3.min(scaterdata, function(d){return d.x;}), d3.max(scaterdata, function(d){return d.x;})])
+                     .range([40, 760]);
+          var yScale = d3.scale.linear()
+                     .domain([d3.min(scaterdata, function(d){return d.y;}), d3.max(scaterdata, function(d){return d.y;})])
+                     .range([40, 760]);
+
+          svg.selectAll("circle")
+            .data(scaterdata)
+            .enter()
+            .append("circle")
+            .attr("cx", function(d){return xScale(d.x);})
+            .attr("cy", function(d){return yScale(d.y);})
+            .attr("r", 10)
+            // .attr("fill",color)
+            // .attr("stroke",color)
+            .style('stroke-opacity', opac)
+            .style('fill-opacity', opac);
+
+          for (var i = 0; i < keys.length; i++) {
+            if( data[1][keys[i]]==1 ) {
+              truevs.push(data[0][keys[i]]);
+            } else {
+              falsevs.push(data[0][keys[i]]);
+            }
+          }
+
+          truevs = _.pairs(_.countBy(truevs,function(v){ return v; }));
+          falsevs = _.pairs(_.countBy(falsevs,function(v){ return v; }));
+          showFvsT(".true-output",truevs);
+          showFvsT(".false-output",falsevs);
+        });
       });
     };
 
@@ -149,9 +220,9 @@ module.exports = View.extend({
           loadAdMix(d.n);
           var features = me.model.getTopFeaturs(d.n);
           var blue_to_brown = d3.scale.pow()
-            .exponent(3.5)
+            .exponent(.1)
             .domain([features[features.length-1][1], features[0][1]])
-            .range(["#447", "red"])
+            .range(["#002", "red"])
             .interpolate(d3.interpolateLab);
           me.pc.color(function(d){ return blue_to_brown(d[i]); });
           $(".case-name").html("Admixture and Top Features for "+ d.n);
@@ -207,6 +278,7 @@ module.exports = View.extend({
 
     for (var i = 0; i < pcdata.length; i++) {
       fnames.push(pcdata[i][0]);
+      
     };
 
     $(".feature-search").typeahead({
@@ -223,14 +295,16 @@ module.exports = View.extend({
     var keys = _.difference(Object.keys(pcdata[0]),ignore_keys);
 
     me.pc = d3.parcoords()(".pc-container");
-
+    
     me.pc.dimensions(keys)
-      .data(pcdata)
+      me.pc.data(pcdata)
+
       //.render()
       .color("#447")
       //.alpha(0.8)
       .margin({ top: 0, left: 0, bottom: 0, right: 0 })
-      .render()/*
+    //me.pc.xscale=d3.scale.linear().domain([0,pcdata[0].length]).range([0,1000]);
+    me.pc.render()/*
       .reorderable()
       .brushable()
       .on('brush', function(data){
