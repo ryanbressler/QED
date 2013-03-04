@@ -92,11 +92,6 @@ module.exports = View.extend({
       });
     };
 
-    // var fmsvcbase = "/svc/data/domains/feature_matrices/"+ me.model.get("dataset_id")
-    //   .replace("_preterm","")
-    //   .replace("_unblacklisted","")
-    //   .replace("_blacklisted","");
-
     var showFvsT = function (selector,data) {
       $(selector).html("");
       var grid = d3.select(selector);
@@ -118,27 +113,42 @@ module.exports = View.extend({
         for (var i = fms.files.length - 1; i >= 0; i--) {
           if (dataset_id.indexOf(fms.files[i].label) === 0 && fms.files[i].label.length > bestlength ) {
             fmsvcbase=fms.files[i].uri;
+            bestlength=fms.files[i].label.length;
           }
         }
 
-        d3.tsv("/svc"+fmsvcbase+"?rows=N:CLIN:TermCategory:NB::::,"+name,function(data){
+        d3.tsv("/svc"+fmsvcbase+"?rows=B:MRGE:Strict_Hypertension_Related:NB::::,N:CLIN:TermCategory:NB::::,"+name,function(data){
           var truevs = [];
           var falsevs = [];
           var pcdata = me.model.get('branches');
           var countByCase={};
           var maxCount = 0;
           var scaterdata = [];
+          iByn={};
+
+          for (var i = 0; i < data.length; i++) {
+              iByn[data[i]["."]]=i;
+            }
+
+          var termi=iByn["N:CLIN:TermCategory:NB::::"];
+          var hypei=iByn["B:MRGE:Strict_Hypertension_Related:NB::::"];
+          var namei=iByn[name];
           for (var i = pcdata.length - 1; i >= 0; i--) {
             if (pcdata[i][0]==name){
               for (var j = 1; j < pcdata[i].length; j++) {
                 var caseid = pcdata[0][j];
-                var x = parseFloat(data[0][caseid]);
+                
+                var x = parseFloat(data[namei][caseid]);
                 if (name[0]=="B") {
-                  x = (+ data[0][caseid].toLowerCase()=="true")+0.2*Math.random()-0.1;
+                  x = (0 + data[namei][caseid].toLowerCase()=="true")+0.2*Math.random()-0.1;
 
                 }
                 
-                scaterdata.push({x:x,y:parseFloat(data[1][caseid])+0.6*Math.random()-0.3,count:pcdata[i][j],caseid:caseid});
+                scaterdata.push({x:x,
+                  y:parseFloat(data[termi][caseid]),
+                  hype:data[hypei][caseid].toLowerCase()=="true",
+                  count:pcdata[i][j],
+                  caseid:caseid});
                 countByCase[pcdata[0][j]]=pcdata[i][j];
                 if (pcdata[i][j]>maxCount) {
                   //should this be the global max instead of just for this feature?
@@ -159,25 +169,34 @@ module.exports = View.extend({
             .attr("height", 800);
           
           var opac = function(d) {
-            return .2+.8*d.count/maxCount;
+            return 0.2+0.6*d.count/maxCount;
+          };
+
+          var size = function(d) {
+            return 4+6*d.count/maxCount;
           };
 
           var xScale = d3.scale.linear()
                      .domain([d3.min(scaterdata, function(d){return d.x;}), d3.max(scaterdata, function(d){return d.x;})])
                      .range([40, 760]);
           var yScale = d3.scale.linear()
-                     .domain([d3.min(scaterdata, function(d){return d.y;}), d3.max(scaterdata, function(d){return d.y;})])
-                     .range([40, 760]);
+                     .domain([d3.min(scaterdata, function(d){return d.y;})-0.3, d3.max(scaterdata, function(d){return d.y;})+0.3])
+                     .range([40, 360]);
+
+          var color = function (d) {
+            return d.hype ? "red" : "blue";
+          }
 
           svg.selectAll("circle")
             .data(scaterdata)
             .enter()
             .append("circle")
             .attr("cx", function(d){return xScale(d.x);})
-            .attr("cy", function(d){return yScale(d.y);})
-            .attr("r", 10)
-            // .attr("fill",color)
-            // .attr("stroke",color)
+            .attr("cy", function(d){return yScale(d.y+0.2*Math.random()-0.1);})
+            .attr("r", size)
+            .attr("fill",color)
+            .attr("stroke",color)
+            //.attr("fill",function(d){ return blue_to_brown(d.y); })
             .style('stroke-opacity', opac)
             .style('fill-opacity', opac);
 
