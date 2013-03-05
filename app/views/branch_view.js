@@ -169,7 +169,7 @@ module.exports = View.extend({
             .attr("height", 800);
           
           var opac = function(d) {
-            return 0.2+0.6*d.count/maxCount;
+            return 0.2+0.4*d.count/maxCount;
           };
 
           var size = function(d) {
@@ -196,9 +196,10 @@ module.exports = View.extend({
             .attr("r", size)
             .attr("fill",color)
             .attr("stroke",color)
-            //.attr("fill",function(d){ return blue_to_brown(d.y); })
             .style('stroke-opacity', opac)
-            .style('fill-opacity', opac);
+            .style('fill-opacity', opac)
+            .append("svg:title")
+            .text(function(d) { return d.caseid+" termcat: "+d.y; });
 
           for (var i = 0; i < keys.length; i++) {
             if( data[1][keys[i]]==1 ) {
@@ -274,7 +275,9 @@ module.exports = View.extend({
           //$(".branch-output").html(output);
           me.pc.render();
           d3.event.stopPropagation();
-        });
+        })
+      .append("svg:title")
+      .text(function(d) { return d.n; });
 
     /*svg.selectAll("text")
       .data(scatdata)
