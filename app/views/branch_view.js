@@ -160,15 +160,15 @@ module.exports = View.extend({
 
           
           
-          var width = 800;
-          var heigt = 400 
+          var width = 1000;
+          var height = 600; 
           
           var keys = _.difference(Object.keys(data[0]),ignore_keys);
           $(".feature-container").html("");
           var svg = d3.select(".feature-container")
             .append("svg")
             .attr("width", width)
-            .attr("height", heigt);
+            .attr("height", height);
           
           var opac = function(d) {
             return 0.2+0.4*d.count/maxCount;
@@ -183,7 +183,7 @@ module.exports = View.extend({
                      .range([80, width-40]);
           var yScale = d3.scale.linear()
                      .domain([d3.min(scaterdata, function(d){return d.y;})-0.3, d3.max(scaterdata, function(d){return d.y;})+0.3])
-                     .range([40, height-40]);
+                     .range([40, height-80]);
           var xAxis = d3.svg.axis().orient("bottom").scale(xScale).ticks(4);
           var yAxis = d3.svg.axis().orient("right").scale(yScale).ticks(4);
 
@@ -192,10 +192,10 @@ module.exports = View.extend({
           }
 
           // Add the x-axis.
-          
+          var xaxiistrans = height -40; 
           svg.append("g")
               .attr("class", "x axis")
-              .attr("transform", "translate(0," + height + ")")
+              .attr("transform", "translate(0," + xaxiistrans + ")")
               .call(xAxis);
 
           // Add the y-axis.
@@ -209,7 +209,7 @@ module.exports = View.extend({
               .attr("class", "x label")
               .attr("text-anchor", "end")
               .attr("x", width)
-              .attr("y", height - 20)
+              .attr("y", height - 50)
               .text(name);
 
           // Add a y-axis label.
@@ -217,7 +217,7 @@ module.exports = View.extend({
               .attr("class", "y label")
               .attr("text-anchor", "end")
               .attr("y", 40)
-              .attr("x", 6)
+              .attr("x", -20)
               .attr("dy", ".75em")
               .attr("transform", "rotate(-90)")
               .text("N:CLIN:TermCategory:NB::::");
@@ -227,12 +227,12 @@ module.exports = View.extend({
             .enter()
             .append("circle")
             .attr("cx", function(d){return xScale(d.x);})
-            .attr("cy", function(d){return yScale(d.y+0.2*Math.random()-0.1);})
+            .attr("cy", function(d){return yScale(d.y+0.5*Math.random()-0.25);})
             .attr("r", size)
             .attr("fill",color)
             .attr("stroke",color)
-            .style('stroke-opacity', opac)
-            .style('fill-opacity', opac)
+            .style('stroke-opacity', .5)
+            .style('fill-opacity', .5)
             .append("svg:title")
             .text(function(d) { return d.caseid+" termcat: "+d.y; });
           
@@ -321,7 +321,7 @@ module.exports = View.extend({
           .attr("text-anchor", "end")
           .attr("x", width)
           .attr("y", height - 10)
-          .text("Index in 1st Eigenvector");*/
+          .text("Case Index in 1st Eigenvector");*/
 
     // Add a y-axis label.
     svg.append("text")
@@ -390,7 +390,7 @@ module.exports = View.extend({
 var pcsvg = d3.select(".pc-container")
       .append("svg")
       .attr("width", width)
-      .attr("height", 400)
+      .attr("height", 200)
       //.margin({ top: 120, left: 80, bottom: 80, right: 80 });
       // Add an x-axis label.
     pcsvg.append("text")
@@ -398,13 +398,13 @@ var pcsvg = d3.select(".pc-container")
           .attr("text-anchor", "middle")
           .attr("x", width/2)
           .attr("y", 12)
-          .text("Index in 1st Eigenvector");
+          .text("Case Index in 1st Eigenvector");
     // Add a y-axis label.
     pcsvg.append("text")
         .attr("class", "y label")
         .attr("text-anchor", "end")
         .attr("y", 20)
-        .attr("x", -80)
+        .attr("x", -40)
         .attr("dy", ".75em")
         .attr("transform", "rotate(-90)")
         .text("Local Feature Importance");
