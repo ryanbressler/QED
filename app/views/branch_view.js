@@ -105,7 +105,7 @@ module.exports = View.extend({
           .style("background-color",function(d){ console.log(d[0]); return color({termcat:d[0]}); });
     };
 
-    var loadFvsTermCat = function(name){
+    var loadFvsTermCat = function(name,target,selector){
       var fmsvcbase = "";
       var dataset_id = me.model.get("dataset_id");
       var bestlength = 0;
@@ -117,7 +117,7 @@ module.exports = View.extend({
           }
         }
 
-        d3.tsv("/svc"+fmsvcbase+"?rows=B:MRGE:Strict_Hypertension_Related:NB::::,N:CLIN:TermCategory:NB::::,"+name,function(data){
+        d3.tsv("/svc"+fmsvcbase+"?rows=B:MRGE:Strict_Hypertension_Related:NB::::,"+target+","+name,function(data){
           var truevs = [];
           var falsevs = [];
           var pcdata = me.model.get('branches');
@@ -130,7 +130,7 @@ module.exports = View.extend({
               iByn[data[i]["."]]=i;
             }
 
-          var termi=iByn["N:CLIN:TermCategory:NB::::"];
+          var termi=iByn[target];
           var hypei=iByn["B:MRGE:Strict_Hypertension_Related:NB::::"];
           var namei=iByn[name];
           for (var i = pcdata.length - 1; i >= 0; i--) {
@@ -138,14 +138,22 @@ module.exports = View.extend({
               for (var j = 1; j < pcdata[i].length; j++) {
                 var caseid = pcdata[0][j];
                 
+                var parseBin = function(b) {
+                  var v = b.toLowerCase()=="true" ? 1 : 0;
+                  return v +0.5*Math.random()-0.25;
+                }
+
                 var x = parseFloat(data[namei][caseid]);
                 if (name[0]=="B") {
-                  x = (0 + data[namei][caseid].toLowerCase()=="true")+0.2*Math.random()-0.1;
-
+                  x = parseBin(data[namei][caseid]);
+                }
+                var y = parseFloat(data[termi][caseid]);
+                if (target[0]=="B") {
+                  y = parseBin(data[termi][caseid]);
                 }
                 
                 scaterdata.push({x:x,
-                  y:parseFloat(data[termi][caseid]),
+                  y:y,
                   hype:data[hypei][caseid].toLowerCase()=="true",
                   count:pcdata[i][j],
                   caseid:caseid});
@@ -164,18 +172,23 @@ module.exports = View.extend({
           var height = 600; 
           
           var keys = _.difference(Object.keys(data[0]),ignore_keys);
-          $(".feature-container").html("");
-          var svg = d3.select(".feature-container")
+          $(selector).html("");
+          var svg = d3.select(selector)
             .append("svg")
             .attr("width", width)
             .attr("height", height);
+
+          var decorate = $("#decorate_fplot").is(':checked')
           
           var opac = function(d) {
             return 0.2+0.4*d.count/maxCount;
           };
 
           var size = function(d) {
-            return 4+6*d.count/maxCount;
+            if (decorate){
+              return 4+6*d.count/maxCount;
+            }
+            return 6;
           };
 
           var xScale = d3.scale.linear()
@@ -188,7 +201,10 @@ module.exports = View.extend({
           var yAxis = d3.svg.axis().orient("right").scale(yScale).ticks(4);
 
           var color = function (d) {
-            return d.hype ? "red" : "blue";
+            if (decorate) {
+              return d.hype ? "red" : "blue";
+            }
+            return "green";
           }
 
           // Add the x-axis.
@@ -216,18 +232,24 @@ module.exports = View.extend({
           svg.append("text")
               .attr("class", "y label")
               .attr("text-anchor", "end")
-              .attr("y", 40)
+              .attr("y", 60)
               .attr("x", -20)
               .attr("dy", ".75em")
               .attr("transform", "rotate(-90)")
-              .text("N:CLIN:TermCategory:NB::::");
+              .text(target);
 
           svg.selectAll("circle")
             .data(scaterdata)
             .enter()
             .append("circle")
             .attr("cx", function(d){return xScale(d.x);})
-            .attr("cy", function(d){return yScale(d.y+0.5*Math.random()-0.25);})
+            .attr("cy", function(d){
+              if (target != "N:CLIN:Gestational_Age_at_Delivery:NB::::"){
+                return yScale(d.y+0.5*Math.random()-0.25);
+              }
+              return yScale(d.y);
+              })
+            //.attr("r",10)
             .attr("r", size)
             .attr("fill",color)
             .attr("stroke",color)
@@ -237,18 +259,6 @@ module.exports = View.extend({
             .text(function(d) { return d.caseid+" termcat: "+d.y; });
           
 
-          for (var i = 0; i < keys.length; i++) {
-            if( data[1][keys[i]]==1 ) {
-              truevs.push(data[0][keys[i]]);
-            } else {
-              falsevs.push(data[0][keys[i]]);
-            }
-          }
-
-          truevs = _.pairs(_.countBy(truevs,function(v){ return v; }));
-          falsevs = _.pairs(_.countBy(falsevs,function(v){ return v; }));
-          showFvsT(".true-output",truevs);
-          showFvsT(".false-output",falsevs);
         });
       });
     };
@@ -304,7 +314,12 @@ module.exports = View.extend({
             .on("click", function(d){
               $(".pathway-output").html("");
               highlightf(d);
-              loadFvsTermCat(d[0]);
+              
+              loadFvsTermCat(d[0],"N:CLIN:TermCategory:NB::::",".feature-container");
+              loadFvsTermCat(d[0],"N:CLIN:Gestational_Age_at_Delivery:NB::::",".feature-container-cont");
+              loadFvsTermCat(d[0],"B:CLIN:Preterm:NB::::",".feature-container-binary");
+
+
               d3.tsv("/svc/data/analysis/genesets/genesets?rows="+d[0].split(":")[2], showpathways);
               })
             .on("mouseover",highlightf)
