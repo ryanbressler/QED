@@ -259,6 +259,8 @@ module.exports = View.extend({
       .attr("height", height)
       .on("click", clearstate);
       //.margin({ top: 120, left: 80, bottom: 80, right: 80 });
+      // Add an x-axis label.
+      
     
     svg.selectAll("circle")
       .data(scatdata)
@@ -314,6 +316,22 @@ module.exports = View.extend({
         })
       .append("svg:title")
       .text(function(d) { return d.n; });
+    /*svg.append("text")
+          .attr("class", "x label")
+          .attr("text-anchor", "end")
+          .attr("x", width)
+          .attr("y", height - 10)
+          .text("Index in 1st Eigenvector");*/
+
+    // Add a y-axis label.
+    svg.append("text")
+        .attr("class", "y label")
+        .attr("text-anchor", "end")
+        .attr("y", 20)
+        .attr("x", -20)
+        .attr("dy", ".75em")
+        .attr("transform", "rotate(-90)")
+        .text("Index in 2nd Eigenvector");
 
     /*svg.selectAll("text")
       .data(scatdata)
@@ -369,6 +387,27 @@ module.exports = View.extend({
       .on('brush', function(data){
       me.model.filterNodes(data);
       })*/;
+var pcsvg = d3.select(".pc-container")
+      .append("svg")
+      .attr("width", width)
+      .attr("height", 400)
+      //.margin({ top: 120, left: 80, bottom: 80, right: 80 });
+      // Add an x-axis label.
+    pcsvg.append("text")
+          .attr("class", "x label")
+          .attr("text-anchor", "middle")
+          .attr("x", width/2)
+          .attr("y", 12)
+          .text("Index in 1st Eigenvector");
+    // Add a y-axis label.
+    pcsvg.append("text")
+        .attr("class", "y label")
+        .attr("text-anchor", "end")
+        .attr("y", 20)
+        .attr("x", -80)
+        .attr("dy", ".75em")
+        .attr("transform", "rotate(-90)")
+        .text("Local Feature Importance");
 		
 	}
 
