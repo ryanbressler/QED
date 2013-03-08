@@ -160,13 +160,15 @@ module.exports = View.extend({
 
           
           
-
+          var width = 800;
+          var heigt = 400 
+          
           var keys = _.difference(Object.keys(data[0]),ignore_keys);
           $(".feature-container").html("");
           var svg = d3.select(".feature-container")
             .append("svg")
-            .attr("width", 800)
-            .attr("height", 800);
+            .attr("width", width)
+            .attr("height", heigt);
           
           var opac = function(d) {
             return 0.2+0.4*d.count/maxCount;
@@ -178,14 +180,47 @@ module.exports = View.extend({
 
           var xScale = d3.scale.linear()
                      .domain([d3.min(scaterdata, function(d){return d.x;}), d3.max(scaterdata, function(d){return d.x;})])
-                     .range([40, 760]);
+                     .range([80, width-40]);
           var yScale = d3.scale.linear()
                      .domain([d3.min(scaterdata, function(d){return d.y;})-0.3, d3.max(scaterdata, function(d){return d.y;})+0.3])
-                     .range([40, 360]);
+                     .range([40, height-40]);
+          var xAxis = d3.svg.axis().orient("bottom").scale(xScale).ticks(4);
+          var yAxis = d3.svg.axis().orient("right").scale(yScale).ticks(4);
 
           var color = function (d) {
             return d.hype ? "red" : "blue";
           }
+
+          // Add the x-axis.
+          
+          svg.append("g")
+              .attr("class", "x axis")
+              .attr("transform", "translate(0," + height + ")")
+              .call(xAxis);
+
+          // Add the y-axis.
+          svg.append("g")
+              .attr("class", "y axis")
+              .attr("transform", "translate(20,0)")
+              .call(yAxis);
+
+          // Add an x-axis label.
+          svg.append("text")
+              .attr("class", "x label")
+              .attr("text-anchor", "end")
+              .attr("x", width)
+              .attr("y", height - 20)
+              .text(name);
+
+          // Add a y-axis label.
+          svg.append("text")
+              .attr("class", "y label")
+              .attr("text-anchor", "end")
+              .attr("y", 40)
+              .attr("x", 6)
+              .attr("dy", ".75em")
+              .attr("transform", "rotate(-90)")
+              .text("N:CLIN:TermCategory:NB::::");
 
           svg.selectAll("circle")
             .data(scaterdata)
@@ -200,6 +235,7 @@ module.exports = View.extend({
             .style('fill-opacity', opac)
             .append("svg:title")
             .text(function(d) { return d.caseid+" termcat: "+d.y; });
+          
 
           for (var i = 0; i < keys.length; i++) {
             if( data[1][keys[i]]==1 ) {
