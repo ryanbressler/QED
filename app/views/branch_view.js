@@ -57,6 +57,24 @@ module.exports = View.extend({
         me.pc.clear("highlight");
         me.pc.render();
     }
+
+    var populate_select = function (data){
+      var data2 =[];
+      for (var i = 0; i < data.length; i++) {
+        console.log(data[i]);
+        if (data[i][0][0]=="B") {
+          data2.push(data[i][0]);
+        }
+      }
+      $("#color_feature").html("");
+      var sel = d3.select("#color_feature");
+        sel.selectAll("select")
+        .data(data2)
+        .enter()
+        .append("option")
+        .text(function(d){ return d;});
+    }
+
     var showpathways=function(data){
       if (data.length==0){
         $(".pathway-output").html("No Pathways Found.");
@@ -93,6 +111,7 @@ module.exports = View.extend({
     };
 
     var showFvsT = function (selector,data) {
+      
       $(selector).html("");
       var grid = d3.select(selector);
         grid.selectAll("div")
@@ -109,6 +128,8 @@ module.exports = View.extend({
       var fmsvcbase = "";
       var dataset_id = me.model.get("dataset_id");
       var bestlength = 0;
+      var color_feature = $("#color_feature").val();
+      color_feature = color_feature == null ? "B:MRGE:Strict_Hypertension_Related:NB::::" : color_feature;
       d3.json("/svc/data/domains/feature_matrices",function(fms){
         for (var i = fms.files.length - 1; i >= 0; i--) {
           if (dataset_id.indexOf(fms.files[i].label) === 0 && fms.files[i].label.length > bestlength ) {
@@ -117,7 +138,7 @@ module.exports = View.extend({
           }
         }
 
-        d3.tsv("/svc"+fmsvcbase+"?rows=B:MRGE:Strict_Hypertension_Related:NB::::,"+target+","+name,function(data){
+        d3.tsv("/svc"+fmsvcbase+"?rows="+color_feature+","+target+","+name,function(data){
           var truevs = [];
           var falsevs = [];
           var pcdata = me.model.get('branches');
@@ -131,7 +152,7 @@ module.exports = View.extend({
             }
 
           var termi=iByn[target];
-          var hypei=iByn["B:MRGE:Strict_Hypertension_Related:NB::::"];
+          var hypei=iByn[color_feature];
           var namei=iByn[name];
           for (var i = pcdata.length - 1; i >= 0; i--) {
             if (pcdata[i][0]==name){
@@ -287,6 +308,7 @@ module.exports = View.extend({
           clearstate();
           loadAdMix(d.n);
           var features = me.model.getTopFeaturs(d.n);
+          populate_select(features);
           var blue_to_brown = d3.scale.pow()
             .exponent(.1)
             .domain([features[features.length-1][1], features[0][1]])
