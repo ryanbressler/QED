@@ -59,7 +59,7 @@ module.exports = View.extend({
     }
 
     var populate_select = function (data){
-      var data2 =[];
+      var data2 =["None"];
       for (var i = 0; i < data.length; i++) {
         console.log(data[i]);
         if (data[i][0][0]=="B") {
@@ -138,12 +138,17 @@ module.exports = View.extend({
           }
         }
 
-        d3.tsv("/svc"+fmsvcbase+"?rows="+color_feature+","+target+","+name,function(data){
+      furl = "/svc"+fmsvcbase+"?rows="+target+","+name;
+      if (color_feature != "None"){
+        furl = furl + "," + color_feature;
+      }
+      d3.tsv(furl,function(data){
           var truevs = [];
           var falsevs = [];
           var pcdata = me.model.get('branches');
           var countByCase={};
           var maxCount = 0;
+          var minCount = 128000;
           var scaterdata = [];
           iByn={};
 
@@ -152,7 +157,7 @@ module.exports = View.extend({
             }
 
           var termi=iByn[target];
-          var hypei=iByn[color_feature];
+          var hypei=color_feature!="None"? iByn[color_feature] : -1;
           var namei=iByn[name];
           for (var i = pcdata.length - 1; i >= 0; i--) {
             if (pcdata[i][0]==name){
@@ -175,13 +180,17 @@ module.exports = View.extend({
                 
                 scaterdata.push({x:x,
                   y:y,
-                  hype:data[hypei][caseid].toLowerCase()=="true",
+                  hype:hypei==-1? 0 : data[hypei][caseid].toLowerCase()=="true",
                   count:pcdata[i][j],
                   caseid:caseid});
                 countByCase[pcdata[0][j]]=pcdata[i][j];
                 if (pcdata[i][j]>maxCount) {
                   //should this be the global max instead of just for this feature?
                   maxCount = pcdata[i][j];
+                }
+                if (pcdata[i][j]< minCount) {
+                  //should this be the global max instead of just for this feature?
+                  minCount = pcdata[i][j];
                 }
               }
             }
@@ -207,7 +216,7 @@ module.exports = View.extend({
 
           var size = function(d) {
             if (decorate){
-              return 4+6*d.count/maxCount;
+              return 2+8*(d.count-minCount)/(maxCount-minCount);
             }
             return 6;
           };
@@ -274,8 +283,8 @@ module.exports = View.extend({
             .attr("r", size)
             .attr("fill",color)
             .attr("stroke",color)
-            .style('stroke-opacity', .5)
-            .style('fill-opacity', .5)
+            .style('stroke-opacity', .3)
+            .style('fill-opacity', .3)
             .append("svg:title")
             .text(function(d) { return d.caseid+" termcat: "+d.y; });
           
