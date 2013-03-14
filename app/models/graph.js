@@ -6,11 +6,11 @@ module.exports = Model.extend({
 
 	serviceRoot : 'svc',
 	serviceRead : '/data',
-	serviceDir :'/analysis/layouts',
+	serviceDir :'/analysis/',
 
 	url : function() {
 		return this.serviceRoot + this.serviceRead + this.serviceDir  + '/'
-				+ this.get('analysis_id') + '/' + this.get('dataset_id');
+				+ this.get('analysis_id') + '/layouts/' + this.get('dataset_id') + "/hodge/"+ this.get('dataset_id')+".cutoff.14.0.json";
 	},
 
 	defaults: {
@@ -39,8 +39,8 @@ module.exports = Model.extend({
 				case('pairwise') :
 					_.extend(options, {x:'r1',y:'r2',edgeRouting:'straight'});
 				break;
-				case('rf-ace') :
-				_.extend(options, {x:'r1',y:'hodge',edgeRouting:'diagonal'});
+				case('rf-pred') :
+				_.extend(options, {x:'r1',y:'hodge',edgeRouting:'diagonal_directed'});
 				break;
 				default:
 					_.extend(options, {x:'x',y:'y',edgeRouting:'diagonal'});
@@ -125,8 +125,12 @@ module.exports = Model.extend({
 			var feature1 = row[0],
 			    feature2 = row[1];
 			    var lookup = qed.app.labels;			
-			var node1 = {feature_id: feature1, label: lookup[feature1]  || feature1.split(':')[2]}, 
-			    node2 = {feature_id: feature2, label: lookup[feature2] || feature2.split(':')[2]}, 
+			// var node1 = {feature_id: feature1, label: lookup[feature1]  || feature1.split(':')[2]}, 
+			//     node2 = {feature_id: feature2, label: lookup[feature2] || feature2.split(':')[2]}, 
+			//      edge = {};
+			console.log(feature1+","+feature2);
+			var node1 = {feature_id: feature1, label: feature1}, 
+			    node2 = {feature_id: feature2, label: feature2}, 
 			     edge = {};
 
 			if (idx = node_map[feature1]) {
@@ -167,7 +171,7 @@ module.exports = Model.extend({
             }
 
             var splits = f.split(':');
-            if (splits.length) return _.last(splits);
+            if (splits.length) return splits[1]+":"+splits[2];
             return f;
         });
 

@@ -149,7 +149,7 @@ Controller = {
         }
 
         //graph based analysis
-        if (_(['rf-ace', 'mds', 'pairwise']).contains(analysis_type)) {
+        if (_(['rf-ace', 'mds', 'pairwise','rf-pred']).contains(analysis_type)) {
             if (len <= 2) {  // 1 or no parameters.  just draw vis of analysis
                 return Controller.ModelAndView(view_name || 'graph', GraphModel, {analysis_id:analysis_type, dataset_id:dataset_id});
             }
