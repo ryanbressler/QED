@@ -10,7 +10,7 @@ module.exports = Model.extend({
 
 	url : function() {
 		return this.serviceRoot + this.serviceRead + this.serviceDir  + '/'
-				+ this.get('analysis_id') + '/layouts/' + this.get('dataset_id') + "/hodge/"+ this.get('dataset_id')+".cutoff.14.0.json";
+				+ this.get('analysis_id') + '/layouts/' + this.get('dataset_id') + "/hodge/"+ this.get('dataset_id')+".cutoff.256.0.json";
 	},
 
 	defaults: {
@@ -106,7 +106,8 @@ module.exports = Model.extend({
 	},
 
 	parse: function(graphData){
-		if (!!~this.get('dataset_id').indexOf('.tsv')) {
+		var id =  this.get('dataset_id')
+		if (id.substr(id.length-4) =='.tsv') {
 			return this.parseTSV(graphData);
 		}
 		return this.parseJSON(graphData);
@@ -197,7 +198,7 @@ module.exports = Model.extend({
 
 	},
 	fetch: function(options) {
-		if (!!~this.url().indexOf('tsv')) {
+		if (!!~this.url().indexOf('.tsv/')) {
 			return Model.prototype.fetch.call(this,_.extend({},options,{dataType:'text'}));
 		}
 		else {

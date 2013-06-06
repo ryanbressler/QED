@@ -29,7 +29,7 @@ module.exports = View.extend({
     var scatdata = this.model.getD3Data();
     var length = scatdata.length;
     var ignore_keys = ['label','type','source','feature_id','nByi',"feature","featureID"];
-    var height = 200;
+    var height = 250;
     var width = 1000;
     var x = function(d) {
           return d.r1*(width/length);
