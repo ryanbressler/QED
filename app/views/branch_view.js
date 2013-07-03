@@ -98,7 +98,7 @@ module.exports = View.extend({
       .interpolate(d3.interpolateLab);
 
     var loadAdMix = function(name){
-      d3.tsv("/svc/data/analysis/admix4.txt?cols="+name,function(data){
+      d3.tsv("svc/data/analysis/admix4.txt?cols="+name,function(data){
         var grid = d3.select(".admix-output");
         grid.selectAll("span")
           .data(data)
@@ -130,7 +130,7 @@ module.exports = View.extend({
       var bestlength = 0;
       var color_feature = $("#color_feature").val();
       color_feature = color_feature == null ? "B:MRGE:Strict_Hypertension_Related:NB::::" : color_feature;
-      d3.json("/svc/data/domains/feature_matrices",function(fms){
+      d3.json("svc/data/domains/feature_matrices",function(fms){
         for (var i = fms.files.length - 1; i >= 0; i--) {
           if (dataset_id.indexOf(fms.files[i].label) === 0 && fms.files[i].label.length > bestlength ) {
             fmsvcbase=fms.files[i].uri;
@@ -138,7 +138,7 @@ module.exports = View.extend({
           }
         }
 
-      furl = "/svc"+fmsvcbase+"?rows="+target+","+name;
+      furl = "svc"+fmsvcbase+"?rows="+target+","+name;
       if (color_feature != "None"){
         furl = furl + "," + color_feature;
       }
@@ -351,7 +351,7 @@ module.exports = View.extend({
               loadFvsTermCat(d[0],"B:CLIN:Preterm:NB::::",".feature-container-binary");
 
 
-              d3.tsv("/svc/data/analysis/genesets/genesets?rows="+d[0].split(":")[2], showpathways);
+              d3.tsv("svc/data/analysis/genesets/genesets?rows="+d[0].split(":")[2], showpathways);
               })
             .on("mouseover",highlightf)
             .on("mouseout",function(){me.pc.clear("highlight");});
