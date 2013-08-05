@@ -132,9 +132,10 @@ module.exports = View.extend({
       color_feature = color_feature == null ? "B:MRGE:Strict_Hypertension_Related:NB::::" : color_feature;
       d3.json("svc/data/domains/feature_matrices",function(fms){
         for (var i = fms.files.length - 1; i >= 0; i--) {
-          if (dataset_id.indexOf(fms.files[i].label) === 0 && fms.files[i].label.length > bestlength ) {
-            fmsvcbase=fms.files[i].uri;
-            bestlength=fms.files[i].label.length;
+          var codefn = encodeURIComponent(fms.files[i].label)
+          if (dataset_id.indexOf(codefn) === 0 && codefn.length > bestlength ) {
+            fmsvcbase="/data/domains/feature_matrices/"+codefn;
+            bestlength=codefn.length;
           }
         }
 
