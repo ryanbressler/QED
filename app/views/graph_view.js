@@ -77,7 +77,7 @@ module.exports = View.extend({
       break;
     }
 
-    this.$el.find(".edgeslider").slider(slider_options);
+    //this.$el.find(".edgeslider").slider(slider_options);
     
    
   },

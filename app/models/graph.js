@@ -10,7 +10,7 @@ module.exports = Model.extend({
 
 	url : function() {
 		return this.serviceRoot + this.serviceRead + this.serviceDir  + '/'
-				+ this.get('analysis_id') + '/layouts/' + this.get('dataset_id') + "/hodge/"+ this.get('dataset_id')+".cutoff.256.0.json";
+				+ this.get('analysis_id') + '/layouts/' + this.get('dataset_id') + "/hodge/"+ this.get('dataset_id')+".cutoff.32.0.json";
 	},
 
 	defaults: {
