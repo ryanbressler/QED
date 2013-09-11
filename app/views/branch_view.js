@@ -350,6 +350,11 @@ module.exports = View.extend({
               loadFvsTermCat(d[0],"N:CLIN:TermCategory:NB::::",".feature-container");
               loadFvsTermCat(d[0],"N:CLIN:Gestational_Age_at_Delivery:NB::::",".feature-container-cont");
               loadFvsTermCat(d[0],"B:CLIN:Preterm:NB::::",".feature-container-binary");
+              loadFvsTermCat(d[0],"B:MRGE:Placenta_Related:NB::::",".feature-container-binary1");
+              loadFvsTermCat(d[0],"B:MRGE:Prom_Related:NB::::",".feature-container-binary2");
+              loadFvsTermCat(d[0],"B:CLIN:Preeclampsia/Eclampsia:M::::",".feature-container-binary3");
+              loadFvsTermCat(d[0],"B:CLIN:Incompetent_Shortened_Cervix:M::::",".feature-container-binary4");
+
 
 
               d3.tsv("svc/data/analysis/genesets/genesets?rows="+d[0].split(":")[2], showpathways);
