@@ -38,14 +38,73 @@ module.exports = View.extend({
           return d.r2*(height/length);
       };
    
-    var colors = ["#D7191C", "#FDAE61", "#CCCCAC", "#ABD9E9", "#2C7BB6"];
-    var color = function(d){
+
+    
+    //Analize the values in the target feature and pick a color scale    
+
+    var vs = []
+    var isInt = true
+    var isFloat = true
+    for (var i = scatdata.length - 1; i >= 0; i--) {
+      var v = scatdata[i].termcat
+      
+      if (v == "NA" || !isNaN(v)) {
+        v = parseFloat(v)
+      }
+      vs[i]=v
+
+      if (typeof v !== 'number' || v % 1 != 0 ){
+        isInt = false
+      }
+      if (typeof v !== 'number' ){
+        isFloat = false
+      }
+      
+    };
+
+    var colors = []
+    var color = function (d){
+      return "#00000"
+    }
+    vs = d3.set(vs).values().sort()
+    nVs = vs.length
+    console.log(vs, nVs, isInt, isFloat)
+    if (nVs == 2) {
+      
+      color = function (d){
+        if (d.termcat == val1) {
+          return "#D7191C"
+        } else {
+          return "#2C7BB6"
+        }
+      };
+    
+
+    } else if (isInt && nVs <= 5 && (d3.max(vs)-d3.min(vs))==(nVs-1)){
+      var colors = ["#D7191C", "#FDAE61", "#CCCCAC", "#ABD9E9", "#2C7BB6"];
+      if (nVs == 3) {
+        var colors = ["#D7191C", "#CCCCAC", "#D7191C"];
+      }
+      var val1 = d3.min(vs)
+      color = function(d){
         if ( ! colors.hasOwnProperty(parseInt(d.termcat))){
-          console.log("bad color "+ (d.termcat-1));
+          console.log("bad color "+ (d.termcat-val1));
           return "#000000";
         }
-        return colors[d.termcat-1];
+        return colors[d.termcat-val1];
       };
+    
+    } else if (isFloat) {
+      
+      colors = d3.scale.linear()
+        .domain([d3.min(vs), d3.max(vs)])
+        .range(["#D7191C", "#2C7BB6"]);
+
+      color = function (d){
+        return colors(parseFloat(d.termcat))
+      }
+
+    } 
 
     var clearstate = function ()
     {

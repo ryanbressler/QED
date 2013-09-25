@@ -1,7 +1,7 @@
 /** @namespace Top-level namespace, vq **/
 
 if ( _ === undefined ||  _.VERSION === undefined) { console.error("Underscore.js not detected.  Please check that is being loaded.");}
-if (d3 === undefined) { console.error("d3.js not detected.  Please check it is being loaded.")}
+//if (d3 === undefined) { console.error("d3.js not detected.  Please check it is being loaded.")}
 vq = {};
 
 vq.VERSION = '2.0';
